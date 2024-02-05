@@ -16,7 +16,11 @@ class CephClient < Formula
   depends_on "openssl" => :build
   depends_on "cmake" => :build
   depends_on "ninja" => :build
-  depends_on "cython" => :build
+  # https://github.com/mulbc/homebrew-ceph-client/issues/31
+  # we need to use cython < 3.0.0 but it's not easy to do with homebrew
+  # so we'll remove the dependency and expect cython installed
+  # externally like `pip3 install "cython<3.0.0."`
+  # depends_on "cython" => :build
   depends_on "leveldb" => :build
   depends_on "nss"
   depends_on "pkg-config" => :build
@@ -39,8 +43,9 @@ class CephClient < Formula
   end
 
   resource "PyYAML" do
-    url "https://files.pythonhosted.org/packages/36/2b/61d51a2c4f25ef062ae3f74576b01638bebad5e045f747ff12643df63844/PyYAML-6.0.tar.gz"
-    sha256 "68fb519c14306fec9720a2a5b45bc9f0c8d1b9c72adf45c37baedfcd949c35a2"
+    # probably don't really need to update this, was just something i tried with cython debugging
+    url "https://files.pythonhosted.org/packages/cd/e5/af35f7ea75cf72f2cd079c95ee16797de7cd71f29ea7c68ae5ce7be1eda0/PyYAML-6.0.1.tar.gz"
+    sha256 "bfdf460b1736c775f2ba9f6a92bca30bc2095067b8a9d77876d1fad6cc3b4a43"
   end
 
   resource "wcwidth" do
@@ -85,13 +90,15 @@ class CephClient < Formula
       -DWITH_SYSTEMD=OFF
       -DWITH_TESTS=OFF
       -DWITH_XFS=OFF
+      -DWITH_FUSE=OFF
+      -DCMAKE_CXX_FLAGS=-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION
     ]
+    # cxx_flags works around https://github.com/mulbc/homebrew-ceph-client/issues/25#issuecomment-1928044848
     targets = %w[
       rados
       rbd
       cephfs
       ceph-conf
-      ceph-fuse
       manpages
       cython_rados
       cython_rbd
@@ -102,7 +109,6 @@ class CephClient < Formula
       executables = %w[
         bin/rados
         bin/rbd
-        bin/ceph-fuse
       ]
       executables.each do |file|
         MachO.open(file).linked_dylibs.each do |dylib|
@@ -115,7 +121,6 @@ class CephClient < Formula
       %w[
         ceph
         ceph-conf
-        ceph-fuse
         rados
         rbd
       ].each do |file|
@@ -141,7 +146,6 @@ class CephClient < Formula
       end
       %w[
         ceph-conf
-        ceph-fuse
         ceph
         librados-config
         rados
@@ -155,7 +159,6 @@ class CephClient < Formula
     bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
     %w[
       ceph-conf
-      ceph-fuse
       rados
       rbd
     ].each do |name|
@@ -176,7 +179,6 @@ class CephClient < Formula
 
   test do
     system "#{bin}/ceph", "--version"
-    system "#{bin}/ceph-fuse", "--version"
     system "#{bin}/rbd", "--version"
     system "#{bin}/rados", "--version"
     system "python", "-c", "import rados"
