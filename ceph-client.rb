@@ -12,7 +12,7 @@ class CephClient < Formula
   end
 
   # depends_on "osxfuse"
-  depends_on "boost@1.76"
+  depends_on "boost"
   depends_on "openssl" => :build
   depends_on "cmake" => :build
   depends_on "ninja" => :build
@@ -55,6 +55,10 @@ class CephClient < Formula
 
   patch :DATA
 
+  patch do
+    url "https://github.com/ceph/ceph/commit/6f80c86d464221764a6af586a82c3cb1760e41e3.diff"
+  end
+
   def install
     ENV.prepend_path "PKG_CONFIG_PATH", "#{Formula["nss"].opt_lib}/pkgconfig"
     ENV.prepend_path "PKG_CONFIG_PATH", "#{Formula["openssl"].opt_lib}/pkgconfig"
@@ -91,6 +95,11 @@ class CephClient < Formula
       -DWITH_TESTS=OFF
       -DWITH_XFS=OFF
       -DWITH_FUSE=OFF
+      -DCMAKE_CXX_FLAGS=-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION
+      -DWITH_JAEGER=OFF
+      -DWITH_RADOSGW_AMQP_ENDPOINT=OFF
+      -DWITH_RADOSGW_KAFKA_ENDPOINT=OFF
+      -DWITH_RADOSGW_POSIX=OFF
     ]
     # cxx_flags works around https://github.com/mulbc/homebrew-ceph-client/issues/25#issuecomment-1928044848
     targets = %w[
