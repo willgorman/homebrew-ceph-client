@@ -1,8 +1,8 @@
 class CephClient < Formula
   desc "Ceph client tools and libraries"
   homepage "https://ceph.com"
-  url "https://download.ceph.com/tarballs/ceph-17.2.5.tar.gz"
-  sha256 "362269c147913af874b2249a46846b0e6f82d2ceb50af46222b6ddec9991b29a"
+  url "https://download.ceph.com/tarballs/ceph-18.2.1.tar.gz"
+  sha256 "8075b03477f42ad23b1efd0cc1a0aa3fa037611fc059a91f5194e4b51c9d764a"
   revision 1
 
   bottle do
@@ -91,7 +91,6 @@ class CephClient < Formula
       -DWITH_TESTS=OFF
       -DWITH_XFS=OFF
       -DWITH_FUSE=OFF
-      -DCMAKE_CXX_FLAGS=-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION
     ]
     # cxx_flags works around https://github.com/mulbc/homebrew-ceph-client/issues/25#issuecomment-1928044848
     targets = %w[
